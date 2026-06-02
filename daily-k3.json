@@ -1,10 +1,9 @@
 {
-  "version      "message": "Utamakan keselamatan",  "version": 5,
+  "version      "message": "Utamakan keselamatan",  "version": 5
       "meaning": "Aman berarti bebas dari risiko atau bahaya.",
       "k3Education": "Keselamatan adalah prioritas utama dalam pekerjaan.",
       "dailySafetyMessage": "Kerja aman lebih penting daripada kerja cepat."
     }
-  ],
 
   "validGuessesByLength": {
     "3": ["APD", "LAS", "BOR", "REM"],
@@ -12,7 +11,7 @@
     "5": ["RAMBU", "ALARM", "KERJA", "TANDA"],
     "6": ["RISIKO", "MASKER"]
   }
-}
+
   "maxGuesses": 6,
   "showDailyMessageOnLoad": true,
 
