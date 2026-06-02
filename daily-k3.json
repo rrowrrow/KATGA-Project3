@@ -1,45 +1,28 @@
 {
-  "version      "message": "Utamakan keselamatan"  "version": 5
-      "meaning": "Aman berarti bebas dari risiko atau bahaya.",
-      "k3Education": "Keselamatan adalah prioritas utama dalam pekerjaan.",
-      "dailySafetyMessage": "Kerja aman lebih penting daripada kerja cepat."
-    }
-
-  "validGuessesByLength": {
-    "3": ["APD", "LAS", "BOR", "REM"],
-    "4": ["AMAN", "IZIN", "HELM", "JAGA", "ALAT"],
-    "5": ["RAMBU", "ALARM", "KERJA", "TANDA"],
-    "6": ["RISIKO", "MASKER"]
-  }
-
   "maxGuesses": 6,
-  "showDailyMessageOnLoad": true,
-
   "manualWords": [
     {
       "date": "2026-06-02",
       "word": "APD",
-      "category": "Perlengkapan",
-      "clue": "Perlengkapan wajib sesuai risiko kerja.",
-      "message": "Gunakan APD sesuai risiko dan pastikan ukurannya sesuai.",
-      "meaning": "APD adalah Alat Pelindung Diri untuk melindungi pekerja dari bahaya.",
-      "k3Education": "APD melindungi pekerja dari risiko fisik, kimia, dan mekanik.",
-      "dailySafetyMessage": "Gunakan APD sebelum memulai pekerjaan."
-    },
-    {
-      "date": "2026-06-03",
-      "word": "HELM",
-      "category": "Proteksi",
-      "clue": "Pelindung kepala.",
-      "message": "Gunakan helm keselamatan.",
-      "meaning": "Helm adalah alat pelindung kepala dari benturan.",
-      "k3Education": "Helm wajib digunakan di area konstruksi dan fabrikasi.",
-      "dailySafetyMessage": "Pastikan helm tidak retak dan terpasang dengan benar."
+      "clue": "Perlengkapan wajib",
+      "message": "Gunakan APD",
+      "meaning": "Alat Pelindung Diri",
+      "education": "APD melindungi dari bahaya kerja",
+      "safety": "Gunakan APD sebelum kerja"
     }
   ],
-
   "fallbackWords": [
     {
       "word": "AMAN",
-      "category": "Budaya",
-      "clue": "Kondisi tanpa bahaya",
+      "clue": "Tujuan utama",
+      "message": "Selalu aman",
+      "meaning": "Bebas dari bahaya",
+      "education": "Keselamatan prioritas",
+      "safety": "Utamakan keselamatan"
+    }
+  ],
+  "validGuessesByLength": {
+    "3": ["APD"],
+    "4": ["AMAN"]
+  }
+}
