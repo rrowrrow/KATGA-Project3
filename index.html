@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K3 Wordle</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Awareness K3 Harian</p>
+        <h1 id="dailyTitle">Loading...</h1>
+        <p id="subTitle">Memuat kata K3 hari ini...</p>
+      </div>
+      <button id="shareBtn" class="primary-btn" type="button">Share</button>
+    </header>
+
+    <section class="stats-bar">
+      <div class="stat-box">
+        <span>Streak</span>
+        <strong id="streakCount">0</strong>
+      </div>
+      <div class="stat-box">
+        <span>Best</span>
+        <strong id="bestStreakCount">0</strong>
+      </div>
+      <div class="stat-box">
+        <span>Status</span>
+        <strong id="statusLabel">Main</strong>
+      </div>
+    </section>
+
+    <p id="feedback" class="feedback"></p>
+
+    <section class="board-wrap">
+      <div id="board" class="board"></div>
+    </section>
+
+    <section class="control-wrap">
+      <input id="guessInput" type="text" placeholder="Masukkan tebakan" autocomplete="off" spellcheck="false" />
+      <button id="submitGuessBtn" class="primary-btn" type="button">Tebak</button>
+    </section>
+
+    <section>
+      <div id="keyboard" class="keyboard"></div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
