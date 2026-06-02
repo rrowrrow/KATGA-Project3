@@ -1,26 +1,31 @@
 {
-  "maxGuesses": 6,
+  "max true,  "maxGuesses": 6,
+
   "manualWords": [
     {
       "date": "2026-06-02",
       "word": "APD",
+      "category": "Perlengkapan",
       "clue": "Perlengkapan wajib",
       "message": "Gunakan APD",
       "meaning": "Alat Pelindung Diri",
-      "education": "APD melindungi dari bahaya kerja",
-      "safety": "Gunakan APD sebelum kerja"
+      "k3Education": "APD melindungi pekerja dari bahaya di tempat kerja",
+      "dailySafetyMessage": "Gunakan APD sebelum mulai bekerja"
     }
   ],
+
   "fallbackWords": [
     {
       "word": "AMAN",
-      "clue": "Tujuan utama",
-      "message": "Selalu aman",
-      "meaning": "Bebas dari bahaya",
-      "education": "Keselamatan prioritas",
-      "safety": "Utamakan keselamatan"
+      "category": "Keselamatan",
+      "clue": "Kondisi tanpa bahaya",
+      "message": "Selalu bekerja aman",
+      "meaning": "Bebas dari risiko atau bahaya",
+      "k3Education": "Keselamatan adalah prioritas dalam setiap pekerjaan",
+      "dailySafetyMessage": "Utamakan keselamatan daripada kecepatan"
     }
   ],
+
   "validGuessesByLength": {
     "3": ["APD"],
     "4": ["AMAN"]
