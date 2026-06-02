@@ -26,10 +26,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function init() {
   try {
-    const res = await fetch("/daily-k3.json", { cache: "no-store" });
+    const res = await fetch("daily-k3.json", { cache: "no-store" });
 
     if (!res.ok) {
-      throw new Error("JSON gagal dimuat. Cek /daily-k3.json");
+      throw new Error("JSON gagal dimuat. Cek daily-k3.json");
     }
 
     const text = await res.text();
