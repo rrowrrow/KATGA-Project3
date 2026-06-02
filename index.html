@@ -3,21 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>K3 Wordle</title>
+  <meta name="theme-color" content="#0f172a" />
+  <title>K3 Wordle Harian</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar">
-      <div>
+    <header class="topbar card">
+      <div class="brand-wrap">
         <p class="eyebrow">Awareness K3 Harian</p>
-        <h1 id="dailyTitle">Loading...</h1>
-        <p id="subTitle">Memuat kata K3 hari ini...</p>
+        <h1 id="dailyTitle">Memuat permainan…</h1>
+        <p id="subTitle">Sedang mengambil kata K3 hari ini.</p>
       </div>
-      <button id="shareBtn" class="primary-btn" type="button">Share</button>
+      <div class="topbar-actions">
+        <button id="helpBtn" class="ghost-btn" type="button" aria-label="Buka bantuan">Panduan</button>
+        <button id="shareBtn" class="primary-btn" type="button" aria-label="Bagikan hasil harian">Share</button>
+      </div>
     </header>
 
-    <section class="stats-bar">
+    <section class="stats-bar card" aria-label="Statistik permainan">
       <div class="stat-box">
         <span>Streak</span>
         <strong id="streakCount">0</strong>
@@ -28,28 +35,52 @@
       </div>
       <div class="stat-box">
         <span>Status</span>
-        <strong id="statusLabel">Main</strong>
+        <strong id="statusLabel">Memuat</strong>
+      </div>
+      <div class="stat-box">
+        <span>Tanggal</span>
+        <strong id="dateLabel">-</strong>
       </div>
     </section>
 
-    <p id="feedback" class="feedback"></p>
+    <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
 
-    <section class="board-wrap">
-      <div id="board" class="board"></div>
+    <section class="board-wrap card">
+      <div id="board" class="board" aria-label="Papan tebakan"></div>
     </section>
 
-    <section class="control-wrap">
-      <input id="guessInput" type="text" placeholder="Masukkan tebakan" autocomplete="off" spellcheck="false" />
-      <button id="submitGuessBtn" class="primary-btn" type="button">Tebak</button>
+    <section class="control-wrap card" aria-label="Kontrol tebakan">
+      <div class="input-stack">
+        <label class="sr-only" for="guessInput">Masukkan tebakan</label>
+        <input id="guessInput" type="text" placeholder="Masukkan tebakan" autocomplete="off" spellcheck="false" maxlength="12" />
+        <small id="hintLabel" class="hint-text">Petunjuk akan tampil setelah data harian dimuat.</small>
+      </div>
+      <div class="button-stack">
+        <button id="backspaceBtn" class="ghost-btn" type="button">Hapus</button>
+        <button id="submitGuessBtn" class="primary-btn" type="button">Tebak</button>
+      </div>
     </section>
 
-    <section>
-      <div id="keyboard" class="keyboard"></div>
+    <section class="keyboard card" aria-label="Keyboard virtual">
+      <div id="keyboard"></div>
     </section>
   </div>
 
-  <div id="toast" class="toast"></div>
+  <div id="modalOverlay" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div>
+          <p id="modalEyebrow" class="modal-eyebrow">Info</p>
+          <h2 id="modalTitle">Judul</h2>
+        </div>
+        <button id="modalCloseBtn" class="icon-btn" type="button" aria-label="Tutup popup">×</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+      <div id="modalActions" class="modal-actions"></div>
+    </div>
+  </div>
 
+  <div id="toast" class="toast" aria-live="polite"></div>
   <script src="script.js"></script>
 </body>
 </html>
