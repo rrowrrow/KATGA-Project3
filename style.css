@@ -1,8 +1,7 @@
 :root {
   --bg: #08111f;
-  --bg-2: #0f172a;
-  --panel: rgba(15, 23, 42, 0.9);
-  --panel-2: rgba(23, 37, 64, 0.96);
+  --panel: rgba(15, 23, 42, 0.92);
+  --panel-2: rgba(23, 37, 64, 0.97);
   --text: #eff6ff;
   --muted: #9fb0cc;
   --border: rgba(255, 255, 255, 0.08);
@@ -11,7 +10,6 @@
   --correct: #22c55e;
   --present: #f59e0b;
   --absent: #64748b;
-  --danger: #fb7185;
   --primary: #38bdf8;
   --primary-2: #7dd3fc;
   --shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
@@ -185,7 +183,7 @@ p {
 .tile {
   aspect-ratio: 1 / 1;
   width: 100%;
-  min-height: 52px;
+  min-height: 54px;
   border-radius: var(--radius-sm);
   display: grid;
   place-items: center;
@@ -454,15 +452,9 @@ code {
 }
 
 @keyframes flip {
-  0% {
-    transform: rotateX(0);
-  }
-  50% {
-    transform: rotateX(90deg);
-  }
-  100% {
-    transform: rotateX(0);
-  }
+  0% { transform: rotateX(0); }
+  50% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
 }
 
 @media (max-width: 820px) {
