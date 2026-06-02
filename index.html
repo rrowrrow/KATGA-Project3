@@ -1,111 +1,52 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f172a" />
-  <title>K3 Wordle Harian</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
-
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>KATGA - Kata K3 Harian</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar card">
-      <div class="brand-wrap">
-        <p class="eyebrow">Awareness K3 Harian</p>
-        <h1 id="dailyTitle">Memuat permainan…</h1>
-        <p id="subTitle">Sedang mengambil kata K3 hari ini.</p>
-      </div>
 
-      <div class="topbar-actions">
-        <button id="helpBtn" class="ghost-btn" type="button" aria-label="Buka panduan">
-          Panduan
-        </button>
-        <button id="shareBtn" class="primary-btn" type="button" aria-label="Bagikan hasil harian">
-          Share
-        </button>
-      </div>
-    </header>
+<div class="container">
 
-    <section class="stats-bar card" aria-label="Statistik permainan">
-      <div class="stat-box">
-        <span>Streak</span>
-        <strong id="streakCount">0</strong>
-      </div>
-      <div class="stat-box">
-        <span>Best</span>
-        <strong id="bestStreakCount">0</strong>
-      </div>
-      <div class="stat-box">
-        <span>Status</span>
-        <strong id="statusLabel">Memuat</strong>
-      </div>
-      <div class="stat-box">
-        <span>Tanggal</span>
-        <strong id="dateLabel">-</strong>
-      </div>
-    </section>
+  <h1>⚡ KATGA</h1>
+  <p class="subtitle">Kata-Kata K3 Harian</p>
 
-    <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+  <!-- STEP 1: MESSAGE -->
+  <div id="messageBox">
+    <h3>📢 Pesan HSSE Hari Ini</h3>
+    <p id="messageText"></p>
 
-    <section class="board-wrap card">
-      <div id="board" class="board" aria-label="Papan tebakan"></div>
-    </section>
+    <label>
+      <input type="checkbox" id="confirmRead">
+      Saya sudah membaca pesan
+    </label>
 
-    <section class="control-wrap card" aria-label="Kontrol tebakan">
-      <div class="input-stack">
-        <label class="sr-only" for="guessInput">Masukkan tebakan</label>
-        <input
-          id="guessInput"
-          type="text"
-          placeholder="Masukkan tebakan"
-          autocomplete="off"
-          spellcheck="false"
-          maxlength="12"
-        />
-        <small id="hintLabel" class="hint-text">
-          Petunjuk akan tampil setelah data harian dimuat.
-        </small>
-      </div>
-
-      <div class="button-stack">
-        <button id="backspaceBtn" class="ghost-btn" type="button">Hapus</button>
-        <button id="submitGuessBtn" class="primary-btn" type="button">Tebak</button>
-      </div>
-    </section>
-
-    <section class="keyboard card" aria-label="Keyboard virtual">
-      <div id="keyboard"></div>
-    </section>
+    <button id="startBtn" disabled>Mulai Game</button>
   </div>
 
-  <!-- Modal -->
-  <div id="modalOverlay" class="modal-overlay hidden" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-header">
-        <div>
-          <p id="modalEyebrow" class="modal-eyebrow">Info</p>
-          <h2 id="modalTitle">Judul</h2>
-        </div>
-        <button id="modalCloseBtn" class="icon-btn" type="button" aria-label="Tutup popup">
-          ×
-        </button>
-      </div>
+  <!-- STEP 2: GAME -->
+  <div id="gameBox" class="hidden">
+    <h3>🎯 Tebak Kata Kunci</h3>
+    <p id="hintText"></p>
 
-      <div id="modalBody" class="modal-body"></div>
-      <div id="modalActions" class="modal-actions"></div>
+    <input id="guessInput" maxlength="6" placeholder="Ketik jawaban...">
+    <button onclick="submitGuess()">Submit</button>
+
+    <p id="feedback"></p>
+  </div>
+
+  <!-- POPUP -->
+  <div id="popup" class="hidden">
+    <div class="popup-content">
+      <h3 id="popupTitle"></h3>
+      <p id="popupBody"></p>
+      <button onclick="closePopup()">OK</button>
     </div>
   </div>
 
-  <div id="toast" class="toast" aria-live="polite"></div>
+</div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
