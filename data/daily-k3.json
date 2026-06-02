@@ -1,31 +1,17 @@
 {
-  "maxGuesses": 6,
-  "showDailyMessageOnLoad": true,
-  "manualWords": [
-    {
-      "date": "2026-06-02",
-      "word": "CEGAH",
-      "category": "apa ya",
-      "clue": "-",
-      "message": "-",
-      "meaning": "-",
-      "k3Education": "-",
-      "dailySafetyMessage": "Gunakan APD sesuai standar sebelum memulai pekerjaan."
-    }
-  ],
-  "fallbackWords": [
-    {
-      "word": "AMAN",
-      "category": "Keselamatan",
-      "clue": "Kondisi tanpa bahaya",
-      "message": "Selalu bekerja dengan aman",
-      "meaning": "Bebas dari bahaya",
-      "k3Education": "Keselamatan kerja adalah prioritas utama.",
-      "dailySafetyMessage": "Utamakan keselamatan dibanding kecepatan."
-    }
-  ],
-  "validGuessesByLength": {
-    "5": ["LARUT","PAPAR","RAMBU","KELAS","SAKIT"],
-    "4": ["AMAN"]
-  }
+  "date": "2026-06-02",
+  "word": "SIAP",
+  "category": "Fit To Work",
+
+  "message": "Pastikan kondisi fisik dan mental dalam keadaan siap sebelum bekerja. Sapaan sederhana membantu mendeteksi kelelahan, stres, dan kehilangan fokus.",
+
+  "fullMessage": "Sapaan sederhana sebelum memulai pekerjaan merupakan early warning system untuk memastikan setiap pekerja dalam kondisi fit to work secara fisik dan mental.",
+
+  "hint": "Kondisi sebelum mulai bekerja",
+
+  "meaning": "Siap berarti kondisi fisik dan mental dalam keadaan optimal",
+
+  "k3Education": "Kondisi tidak siap seperti kelelahan, stres, atau kehilangan fokus dapat menjadi penyebab utama kecelakaan kerja",
+
+  "dailySafetyMessage": "Pastikan diri dan rekan kerja benar-benar siap sebelum memulai pekerjaan"
 }
