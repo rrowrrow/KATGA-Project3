@@ -25,7 +25,7 @@
     }
   ],
   "validGuessesByLength": {
-    "3": ["LARUT","PAPAR","RAMBU","KELAS","SAKIT"],
+    "5": ["LARUT","PAPAR","RAMBU","KELAS","SAKIT"],
     "4": ["AMAN"]
   }
 }
