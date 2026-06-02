@@ -1,328 +1,145 @@
+const DATA_URL = "./daily-k3.json";
+
 let answer = "";
+let attempts = [];
 let current = "";
-let attempts = 0;
-let maxAttempts = 6;
-let gameLocked = false;
+let max = 6;
+let locked = false;
 
-const STORAGE_KEY = "k3wordle_simple_v1";
+let state = JSON.parse(localStorage.getItem("k3")) || {
+  streak: 0,
+  best: 0,
+  lastWin: null,
+  daily: {}
+};
 
-document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("guessInput");
-  const submitBtn = document.getElementById("submitGuessBtn");
-  const shareBtn = document.getElementById("shareBtn");
+const today = new Date().toISOString().slice(0,10);
 
-  input.addEventListener("input", (e) => {
-    if (gameLocked) return;
-    current = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, answer.length || 12);
-    e.target.value = current;
-    updateBoard();
-  });
-
-  submitBtn.addEventListener("click", submitGuess);
-  shareBtn.addEventListener("click", shareResult);
-
-  init();
-});
+init();
 
 async function init() {
-  try {
-    const res = await fetch("daily-k3.json", { cache: "no-store" });
+  const res = await fetch(DATA_URL);
+  const data = await res.json();
 
-    if (!res.ok) {
-      throw new Error("JSON gagal dimuat. Cek daily-k3.json");
-    }
+  let todayData = data.manualWords.find(x => x.date === today) ||
+                  data.fallbackWords[new Date().getDate() % data.fallbackWords.length];
 
-    const text = await res.text();
+  answer = todayData.word.toUpperCase();
 
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error("RESPON RAW BUKAN JSON VALID:", text);
-      throw new Error("Isi /data/daily-k3.json bukan JSON valid");
-    }
-
-    maxAttempts = data.maxGuesses || 6;
-
-    const now = new Date();
-    const today =
-      now.getFullYear() + "-" +
-      String(now.getMonth() + 1).padStart(2, "0") + "-" +
-      String(now.getDate()).padStart(2, "0");
-
-    let todayData = null;
-
-    if (Array.isArray(data.manualWords)) {
-      todayData = data.manualWords.find(item => item.date === today);
-    }
-
-    if (!todayData) {
-      if (Array.isArray(data.fallbackWords) && data.fallbackWords.length > 0) {
-        const index = now.getDate() % data.fallbackWords.length;
-        todayData = data.fallbackWords[index];
-      } else {
-        throw new Error("Tidak ada kata harian maupun fallback");
-      }
-    }
-
-    if (!todayData.word) {
-      throw new Error("Format word pada JSON tidak ditemukan");
-    }
-
-    answer = String(todayData.word).toUpperCase().replace(/[^A-Z]/g, "");
-
-    if (!answer) {
-      throw new Error("Word harian kosong / tidak valid");
-    }
-
-    document.getElementById("dailyTitle").textContent = `K3 Wordle (${answer.length} huruf)`;
-    document.getElementById("subTitle").textContent =
-      todayData.clue || todayData.message || "Tebak kata K3 hari ini.";
-
-    document.getElementById("statusLabel").textContent = "Main";
-
-    restoreStats();
-    createBoard();
-    createKeyboard();
-
-  } catch (err) {
-    console.error("INIT ERROR:", err);
-    document.getElementById("dailyTitle").textContent = "ERROR";
-    document.getElementById("subTitle").textContent = err.message;
-    setFeedback(err.message, true);
+  if (!state.daily[today]) {
+    state.daily[today] = {
+      attempts: [],
+      locked: false,
+      win: false
+    };
   }
+
+  attempts = state.daily[today].attempts;
+  locked = state.daily[today].locked;
+
+  render();
+  showIntro(todayData);
 }
 
-function createBoard() {
+function render() {
+  document.getElementById("streak").textContent = state.streak;
+  document.getElementById("best").textContent = state.best;
+
   const board = document.getElementById("board");
   board.innerHTML = "";
 
-  for (let i = 0; i < maxAttempts; i++) {
+  attempts.forEach(a => {
     const row = document.createElement("div");
-    row.className = "board-row";
-    row.style.gridTemplateColumns = `repeat(${answer.length}, 1fr)`;
+    row.className = "row";
 
-    for (let j = 0; j < answer.length; j++) {
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      row.appendChild(tile);
-    }
-
-    board.appendChild(row);
-  }
-}
-
-function createKeyboard() {
-  const keyboard = document.getElementById("keyboard");
-  keyboard.innerHTML = "";
-
-  const layouts = [
-    ["Q","W","E","R","T","Y","U","I","O","P"],
-    ["A","S","D","F","G","H","J","K","L"],
-    ["Z","X","C","V","B","N","M"]
-  ];
-
-  layouts.forEach(keys => {
-    const row = document.createElement("div");
-    row.className = "keyboard-row";
-
-    keys.forEach(k => {
-      const btn = document.createElement("button");
-      btn.textContent = k;
-      btn.className = "key";
-      btn.type = "button";
-      btn.addEventListener("click", () => pressKey(k));
-      row.appendChild(btn);
+    a.eval.forEach(e => {
+      const t = document.createElement("div");
+      t.className = "tile " + e;
+      t.textContent = e.letter;
+      row.appendChild(t);
     });
 
-    keyboard.appendChild(row);
+    board.appendChild(row);
   });
 }
 
-function pressKey(letter) {
-  if (gameLocked) return;
-  if (current.length < answer.length) {
-    current += letter;
-    document.getElementById("guessInput").value = current;
-    updateBoard();
-  }
-}
+document.getElementById("submit").onclick = () => {
+  if (locked) return;
 
-function updateBoard() {
-  const rows = document.querySelectorAll(".board-row");
-  if (!rows[attempts]) return;
+  const input = document.getElementById("input");
+  const word = input.value.toUpperCase();
 
-  const tiles = rows[attempts].children;
+  if (word.length !== answer.length) return;
 
-  for (let i = 0; i < answer.length; i++) {
-    tiles[i].textContent = current[i] || "";
-    tiles[i].className = "tile";
-  }
-}
+  const evals = [];
 
-function submitGuess() {
-  if (gameLocked) return;
+  for (let i=0;i<word.length;i++) {
+    let status = "absent";
+    if (word[i] === answer[i]) status = "correct";
+    else if (answer.includes(word[i])) status = "present";
 
-  if (current.length !== answer.length) {
-    setFeedback(`Jumlah huruf harus ${answer.length}`, true);
-    return;
+    evals.push({letter: word[i], type:status});
   }
 
-  const rows = document.querySelectorAll(".board-row");
-  const tiles = rows[attempts].children;
+  attempts.push({word, eval: evals});
 
-  const used = Array(answer.length).fill(false);
+  if (word === answer) finish(true);
+  else if (attempts.length >= max) finish(false);
 
-  for (let i = 0; i < answer.length; i++) {
-    if (current[i] === answer[i]) {
-      tiles[i].classList.add("correct");
-      used[i] = true;
-    }
-  }
+  save();
+  render();
+  input.value = "";
+};
 
-  for (let i = 0; i < answer.length; i++) {
-    if (tiles[i].classList.contains("correct")) continue;
-
-    let found = false;
-    for (let j = 0; j < answer.length; j++) {
-      if (!used[j] && current[i] === answer[j]) {
-        found = true;
-        used[j] = true;
-        break;
-      }
-    }
-
-    if (found) {
-      tiles[i].classList.add("present");
-    } else {
-      tiles[i].classList.add("absent");
-    }
-  }
-
-  colorKeyboard(current, tiles);
-
-  if (current === answer) {
-    setFeedback("✅ BENAR!", false);
-    showToast("Mantap!");
-    document.getElementById("statusLabel").textContent = "Menang";
-    saveStats(true);
-    lockGame();
-    return;
-  }
-
-  attempts++;
-  current = "";
-  document.getElementById("guessInput").value = "";
-
-  if (attempts >= maxAttempts) {
-    setFeedback("❌ Jawaban: " + answer, true);
-    showToast("Game Over");
-    document.getElementById("statusLabel").textContent = "Kalah";
-    saveStats(false);
-    lockGame();
-  } else {
-    setFeedback("Lanjut tebak...", false);
-  }
-}
-
-function colorKeyboard(word, tiles) {
-  const buttons = [...document.querySelectorAll(".key")];
-  for (let i = 0; i < word.length; i++) {
-    const btn = buttons.find(b => b.textContent === word[i]);
-    if (!btn) continue;
-
-    if (tiles[i].classList.contains("correct")) {
-      btn.classList.remove("present", "absent");
-      btn.classList.add("correct");
-    } else if (tiles[i].classList.contains("present") && !btn.classList.contains("correct")) {
-      btn.classList.remove("absent");
-      btn.classList.add("present");
-    } else if (
-      tiles[i].classList.contains("absent") &&
-      !btn.classList.contains("correct") &&
-      !btn.classList.contains("present")
-    ) {
-      btn.classList.add("absent");
-    }
-  }
-}
-
-function lockGame() {
-  gameLocked = true;
-  document.getElementById("guessInput").disabled = true;
-  document.getElementById("submitGuessBtn").disabled = true;
-}
-
-function setFeedback(msg, error = false) {
-  const el = document.getElementById("feedback");
-  el.textContent = msg;
-  el.className = "feedback " + (error ? "error" : "good");
-}
-
-function showToast(text) {
-  const toast = document.getElementById("toast");
-  toast.textContent = text;
-  toast.classList.add("show");
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2000);
-}
-
-function saveStats(win) {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  const stats = raw ? JSON.parse(raw) : { streak: 0, best: 0 };
+function finish(win) {
+  locked = true;
+  state.daily[today].locked = true;
+  state.daily[today].win = win;
 
   if (win) {
-    stats.streak += 1;
-    stats.best = Math.max(stats.best, stats.streak);
+    state.streak++;
+    state.best = Math.max(state.best, state.streak);
+    showModal("Menang!", "Kamu berhasil 🎉");
   } else {
-    stats.streak = 0;
+    state.streak = 0;
+    showModal("Kalah", "Jawaban: " + answer);
   }
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
-  restoreStats();
 }
 
-function restoreStats() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  const stats = raw ? JSON.parse(raw) : { streak: 0, best: 0 };
-
-  document.getElementById("streakCount").textContent = stats.streak || 0;
-  document.getElementById("bestStreakCount").textContent = stats.best || 0;
+function save() {
+  state.daily[today].attempts = attempts;
+  localStorage.setItem("k3", JSON.stringify(state));
 }
 
-function shareResult() {
-  if (!answer) {
-    showToast("Game belum siap");
-    return;
-  }
+document.getElementById("shareBtn").onclick = () => {
+  let text = "K3 Wordle\n";
 
-  const rows = [...document.querySelectorAll(".board-row")];
-  const playedRows = rows.slice(0, attempts + (gameLocked ? 0 : 0));
+  attempts.forEach(a=>{
+    let line = "";
+    a.eval.forEach(e=>{
+      if (e.type=="correct") line+="🟩";
+      else if (e.type=="present") line+="🟨";
+      else line+="⬛";
+    });
+    text += line+"\n";
+  });
 
-  const lines = playedRows
-    .map(row => {
-      const tiles = [...row.children];
-      if (!tiles.some(t => t.textContent)) return null;
+  navigator.clipboard.writeText(text);
+  alert("Copied ✅");
+};
 
-      return tiles.map(tile => {
-        if (tile.classList.contains("correct")) return "🟩";
-        if (tile.classList.contains("present")) return "🟨";
-        if (tile.classList.contains("absent")) return "⬛";
-        return "⬜";
-      }).join("");
-    })
-    .filter(Boolean);
+function showModal(title,text) {
+  const modal = document.getElementById("modal");
+  modal.classList.remove("hidden");
 
-  const text = [
-    `K3 Wordle`,
-    `${gameLocked && document.getElementById("statusLabel").textContent === "Menang" ? attempts : "X"}/${maxAttempts}`,
-    ...lines
-  ].join("\n");
+  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalText").textContent = text;
 
-  navigator.clipboard.writeText(text)
-    .then(() => showToast("Hasil disalin"))
-    .catch(() => showToast("Copy gagal"));
+  document.getElementById("modalBtn").onclick=()=>{
+    modal.classList.add("hidden");
+  };
 }
-``
+
+function showIntro(data) {
+  showModal("Petunjuk", data.clue + "\n\n" + data.message);
+}
