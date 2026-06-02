@@ -1,4 +1,10 @@
-const STORAGE_KEY = "k3wordle_daily_v5";const STORAGE_KEY = ": "",
+const STORAGE_KEY = "k3wordle_daily_v5";
+const DATA_URL = "./data/daily-k3.json"; // jika JSON ada di root, ubah ke "./daily-k3.json"
+
+const state = {
+  config: null,
+  dateKey: "",
+  dateLabel: "",
   answer: "",
   clue: "",
   message: "",
@@ -14,7 +20,7 @@ const STORAGE_KEY = "k3wordle_daily_v5";const STORAGE_KEY = ": "",
   hasSharedToday: false,
   popupQueue: [],
   popupOpen: false,
-  validGuessSet: new Set(),
+  validGuessSet: new Set()
 };
 
 const els = {};
@@ -53,19 +59,38 @@ function collectElements() {
 }
 
 function bindEvents() {
-  els.guessInput.addEventListener("input", handleInputChange);
-  els.guessInput.addEventListener("keydown", handleInputKeydown);
-  els.submitGuessBtn.addEventListener("click", submitGuess);
-  els.backspaceBtn.addEventListener("click", removeLastChar);
-  els.shareBtn.addEventListener("click", () => shareResult(false));
-  els.helpBtn.addEventListener("click", openHelpModal);
-  els.modalCloseBtn.addEventListener("click", closeModalAndContinue);
+  if (els.guessInput) {
+    els.guessInput.addEventListener("input", handleInputChange);
+    els.guessInput.addEventListener("keydown", handleInputKeydown);
+  }
 
-  els.modalOverlay.addEventListener("click", (event) => {
-    if (event.target === els.modalOverlay) {
-      closeModalAndContinue();
-    }
-  });
+  if (els.submitGuessBtn) {
+    els.submitGuessBtn.addEventListener("click", submitGuess);
+  }
+
+  if (els.backspaceBtn) {
+    els.backspaceBtn.addEventListener("click", removeLastChar);
+  }
+
+  if (els.shareBtn) {
+    els.shareBtn.addEventListener("click", () => shareResult(false));
+  }
+
+  if (els.helpBtn) {
+    els.helpBtn.addEventListener("click", openHelpModal);
+  }
+
+  if (els.modalCloseBtn) {
+    els.modalCloseBtn.addEventListener("click", closeModalAndContinue);
+  }
+
+  if (els.modalOverlay) {
+    els.modalOverlay.addEventListener("click", (event) => {
+      if (event.target === els.modalOverlay) {
+        closeModalAndContinue();
+      }
+    });
+  }
 
   document.addEventListener("keydown", (event) => {
     if (state.popupOpen || state.gameLocked) return;
@@ -83,7 +108,9 @@ function bindEvents() {
     if (/^[a-zA-Z]$/.test(event.key)) {
       if (state.current.length >= state.answer.length) return;
       state.current += event.key.toUpperCase();
-      els.guessInput.value = state.current;
+      if (els.guessInput) {
+        els.guessInput.value = state.current;
+      }
       renderCurrentRow();
     }
   });
@@ -109,10 +136,10 @@ async function init() {
     processPopupQueue();
   } catch (error) {
     console.error("INIT_ERROR", error);
-    els.title.textContent = "Gagal memuat permainan";
-    els.subTitle.textContent = error.message || "Terjadi error saat membaca data harian.";
+    if (els.title) els.title.textContent = "Gagal memuat permainan";
+    if (els.subTitle) els.subTitle.textContent = error.message || "Terjadi error saat membaca data harian.";
     setFeedback(error.message || "Gagal memuat data.", true);
-    els.statusLabel.textContent = "Error";
+    if (els.statusLabel) els.statusLabel.textContent = "Error";
   }
 }
 
@@ -120,18 +147,18 @@ async function loadConfig() {
   const response = await fetch(DATA_URL, { cache: "no-store" });
 
   if (!response.ok) {
-    throw new Error("File daily-k3.json tidak bisa dibuka. Pastikan file ada di root repository.");
+    throw new Error(`File JSON tidak bisa dibuka di: ${DATA_URL}`);
   }
 
   let data;
   try {
     data = await response.json();
   } catch (error) {
-    throw new Error("Isi daily-k3.json bukan JSON yang valid.");
+    throw new Error("Isi file daily-k3.json bukan JSON yang valid.");
   }
 
   if (!data || typeof data !== "object") {
-    throw new Error("Format daily-k3.json tidak valid.");
+    throw new Error("Format JSON tidak valid.");
   }
 
   return data;
@@ -143,7 +170,7 @@ function setupPuzzle(config) {
   state.dateLabel = now.toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "long",
-    year: "numeric",
+    year: "numeric"
   });
 
   state.maxAttempts =
@@ -154,24 +181,21 @@ function setupPuzzle(config) {
   const todayData = getTodayWord(config, state.dateKey, now);
 
   if (!todayData || !todayData.word) {
-    throw new Error("Kata harian tidak ditemukan. Isi manualWords atau fallbackWords terlebih dahulu.");
+    throw new Error("Kata harian tidak ditemukan di JSON.");
   }
 
   state.answer = normalizeWord(todayData.word);
 
   if (!state.answer) {
-    throw new Error("Word harian kosong atau berisi karakter yang tidak valid.");
+    throw new Error("Word harian kosong atau tidak valid.");
   }
 
-  state.clue = todayData.clue || "Tebak kata K3 hari ini.";
+  state.clue = todayData.clue || "Tebak kata hari ini.";
   state.message = todayData.message || "Selalu utamakan keselamatan kerja.";
   state.category = todayData.category || "K3";
-  state.meaning = todayData.meaning || "Makna kata belum diisi.";
-  state.k3Education = todayData.k3Education || "Edukasi K3 belum diisi.";
-  state.dailySafetyMessage =
-    todayData.dailySafetyMessage ||
-    todayData.message ||
-    "Utamakan keselamatan dalam setiap aktivitas kerja.";
+  state.meaning = todayData.meaning || "-";
+  state.k3Education = todayData.k3Education || "-";
+  state.dailySafetyMessage = todayData.dailySafetyMessage || "-";
 
   const byLength = config.validGuessesByLength || {};
   const candidateList = byLength[String(state.answer.length)] || [];
@@ -179,15 +203,17 @@ function setupPuzzle(config) {
   state.validGuessSet = new Set(
     candidateList.map(normalizeWord).filter(Boolean)
   );
+
+  // selalu pastikan jawaban termasuk valid
   state.validGuessSet.add(state.answer);
 
   document.title = `K3 Wordle Harian - ${state.dateLabel}`;
-  els.title.textContent = `K3 Wordle (${state.answer.length} huruf)`;
-  els.subTitle.textContent = state.message;
-  els.hintLabel.textContent = `Kategori: ${state.category}. Petunjuk: ${state.clue}`;
-  els.dateLabel.textContent = state.dateLabel;
-  els.statusLabel.textContent = "Main";
-  els.guessInput.maxLength = state.answer.length;
+  if (els.title) els.title.textContent = `K3 Wordle (${state.answer.length} huruf)`;
+  if (els.subTitle) els.subTitle.textContent = state.message;
+  if (els.hintLabel) els.hintLabel.textContent = `Kategori: ${state.category}. Petunjuk: ${state.clue}`;
+  if (els.dateLabel) els.dateLabel.textContent = state.dateLabel;
+  if (els.statusLabel) els.statusLabel.textContent = "Main";
+  if (els.guessInput) els.guessInput.maxLength = state.answer.length;
 }
 
 function getTodayWord(config, dateKey, now) {
@@ -212,6 +238,7 @@ function dayOfYear(date) {
 }
 
 function createBoard() {
+  if (!els.board) return;
   els.board.innerHTML = "";
 
   for (let rowIndex = 0; rowIndex < state.maxAttempts; rowIndex += 1) {
@@ -233,10 +260,12 @@ function createBoard() {
 }
 
 function createKeyboard() {
+  if (!els.keyboard) return;
+
   const layouts = [
     ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
     ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-    ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"],
+    ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"]
   ];
 
   els.keyboard.innerHTML = "";
@@ -280,7 +309,7 @@ function handleVirtualKey(keyValue) {
   if (state.current.length >= state.answer.length) return;
 
   state.current += keyValue;
-  els.guessInput.value = state.current;
+  if (els.guessInput) els.guessInput.value = state.current;
   renderCurrentRow();
 }
 
@@ -303,7 +332,7 @@ function handleInputKeydown(event) {
 function removeLastChar() {
   if (state.gameLocked) return;
   state.current = state.current.slice(0, -1);
-  els.guessInput.value = state.current;
+  if (els.guessInput) els.guessInput.value = state.current;
   renderCurrentRow();
 }
 
@@ -346,7 +375,7 @@ function submitGuess() {
   }
 
   if (state.validGuessSet.size > 0 && !state.validGuessSet.has(guess)) {
-    setFeedback("Kata tidak ada dalam daftar valid yang kamu masukkan.", true);
+    setFeedback("Kata tidak ada dalam daftar valid.", true);
     showToast("Kata tidak valid.");
     return;
   }
@@ -359,7 +388,7 @@ function submitGuess() {
   colorKeyboardFromAttempts();
 
   state.current = "";
-  els.guessInput.value = "";
+  if (els.guessInput) els.guessInput.value = "";
 
   const storage = readStorage();
   ensureTodayStorage(storage);
@@ -369,8 +398,7 @@ function submitGuess() {
     result: "playing",
     locked: false,
     attempts: state.attempts,
-    hasShared: state.hasSharedToday,
-    hasShownEducationPopup: false,
+    hasShared: state.hasSharedToday
   };
 
   if (guess === state.answer) {
@@ -391,6 +419,7 @@ function evaluateGuess(guess, answer) {
   const result = Array.from({ length: answer.length }, () => "absent");
   const used = Array(answer.length).fill(false);
 
+  // benar posisi
   for (let i = 0; i < guess.length; i += 1) {
     if (guess[i] === answer[i]) {
       result[i] = "correct";
@@ -398,6 +427,7 @@ function evaluateGuess(guess, answer) {
     }
   }
 
+  // huruf ada tapi posisi lain
   for (let i = 0; i < guess.length; i += 1) {
     if (result[i] === "correct") continue;
 
@@ -459,18 +489,15 @@ function colorKeyboardFromAttempts() {
 function finishGame(type, storage) {
   state.result = type;
   state.gameLocked = true;
-
   const isWin = type === "win";
 
-  const previousTodayData = storage.daily[state.dateKey] || {};
   storage.daily[state.dateKey] = {
     date: state.dateKey,
     result: type,
     locked: true,
     attempts: state.attempts,
     completedAt: new Date().toISOString(),
-    hasShared: state.hasSharedToday,
-    hasShownEducationPopup: previousTodayData.hasShownEducationPopup || false,
+    hasShared: state.hasSharedToday
   };
 
   storage.stats = updateStats(storage.stats, state.dateKey, isWin);
@@ -481,16 +508,13 @@ function finishGame(type, storage) {
   colorKeyboardFromAttempts();
 
   if (isWin) {
-    els.statusLabel.textContent = "Menang";
+    if (els.statusLabel) els.statusLabel.textContent = "Menang";
     setFeedback(`Benar! Kata hari ini adalah ${state.answer}.`, false);
     showToast("Mantap, tebakan benar!");
 
-    // Popup edukasi setelah jawaban benar
     enqueueWinEducationPopup();
-    storage.daily[state.dateKey].hasShownEducationPopup = true;
-    saveStorage(storage);
   } else {
-    els.statusLabel.textContent = "Kalah";
+    if (els.statusLabel) els.statusLabel.textContent = "Kalah";
     setFeedback(`Kesempatan habis. Jawaban hari ini: ${state.answer}.`, true);
     showToast("Kesempatan habis.");
   }
@@ -510,7 +534,7 @@ function enqueueWinEducationPopup() {
     `,
     actions: [
       { label: "Lanjut", variant: "primary", onClick: closeModalAndContinue }
-    ],
+    ]
   });
 }
 
@@ -518,7 +542,7 @@ function updateStats(stats = defaultStats(), dateKey, win) {
   const nextStats = {
     streak: Number(stats.streak || 0),
     best: Number(stats.best || 0),
-    lastWinDate: stats.lastWinDate || null,
+    lastWinDate: stats.lastWinDate || null
   };
 
   if (!win) {
@@ -545,14 +569,16 @@ function updateStats(stats = defaultStats(), dateKey, win) {
 }
 
 function renderStats(stats) {
-  els.streakCount.textContent = String(stats.streak || 0);
-  els.bestStreakCount.textContent = String(stats.best || 0);
+  if (els.streakCount) els.streakCount.textContent = String(stats.streak || 0);
+  if (els.bestStreakCount) els.bestStreakCount.textContent = String(stats.best || 0);
 }
 
 function syncControlState() {
-  els.guessInput.disabled = state.gameLocked;
-  els.submitGuessBtn.disabled = state.gameLocked;
-  els.backspaceBtn.disabled = state.gameLocked;
+  if (els.guessInput) els.guessInput.disabled = state.gameLocked;
+  if (els.submitGuessBtn) els.submitGuessBtn.disabled = state.gameLocked;
+  if (els.backspaceBtn) els.backspaceBtn.disabled = state.gameLocked;
+
+  if (!els.statusLabel) return;
 
   if (state.gameLocked && state.result === "win") {
     els.statusLabel.textContent = "Menang";
@@ -579,9 +605,7 @@ function queueStartupPopups() {
           <li><strong>Hijau</strong>: huruf benar dan posisi benar.</li>
           <li><strong>Kuning</strong>: huruf ada, tapi posisi belum tepat.</li>
           <li><strong>Abu</strong>: huruf tidak ada di jawaban.</li>
-          <li><strong>Validasi kata</strong>: tebakan harus ada di daftar kata valid yang kamu isi manual di <code>daily-k3.json</code>.</li>
         </ul>
-        <p>Jika berhasil, akan muncul popup edukasi tentang makna kata dan pesan K3 hari ini.</p>
       `,
       actions: [
         {
@@ -590,9 +614,9 @@ function queueStartupPopups() {
           onClick: () => {
             sessionStorage.setItem(introKey, "1");
             closeModalAndContinue();
-          },
-        },
-      ],
+          }
+        }
+      ]
     });
   }
 
@@ -604,31 +628,21 @@ function queueStartupPopups() {
         <p><strong>Petunjuk:</strong> ${escapeHtml(state.clue)}</p>
         <p>${escapeHtml(state.message)}</p>
       `,
-      actions: [{ label: "Lanjut", variant: "primary", onClick: closeModalAndContinue }],
+      actions: [
+        { label: "Lanjut", variant: "primary", onClick: closeModalAndContinue }
+      ]
     });
   }
 
   if (state.gameLocked) {
-    const storage = readStorage();
-    const todayData = storage.daily[state.dateKey];
-
-    if (
-      todayData &&
-      todayData.result === "win" &&
-      !todayData.hasShownEducationPopup
-    ) {
+    if (state.result === "win") {
       enqueueWinEducationPopup();
-      todayData.hasShownEducationPopup = true;
-      saveStorage(storage);
     }
-
     enqueueResultPopup(state.result === "win", true);
   }
 }
 
 function enqueueResultPopup(isWin, fromRestore = false) {
-  const sharePreview = buildShareText();
-
   state.popupQueue.push({
     eyebrow: isWin ? "Hasil Hari Ini" : "Puzzle Selesai",
     title: isWin ? "Selamat, jawaban benar!" : "Puzzle hari ini selesai",
@@ -636,39 +650,42 @@ function enqueueResultPopup(isWin, fromRestore = false) {
       <p>${
         isWin
           ? "Kerja bagus, kamu berhasil menyelesaikan puzzle K3 hari ini."
-          : "Kesempatan hari ini sudah habis. Tidak apa, lanjut lagi besok!"
+          : "Kesempatan hari ini sudah habis. Lanjut lagi besok."
       }</p>
       <p><strong>Daily lock aktif</strong> sampai puzzle berikutnya tersedia.</p>
       <div class="share-preview">${escapeHtml(buildShareText())}</div>
       <p>${
         fromRestore
           ? "Status ini dipulihkan dari progress yang tersimpan di browser."
-          : "Hasil ini sudah siap dibagikan ke grup atau dicopy ke clipboard."
+          : "Hasil ini siap dibagikan atau dicopy."
       }</p>
     `,
     actions: [
       { label: "Copy hasil", variant: "secondary", onClick: () => shareResult(true) },
-      { label: "Tutup", variant: "primary", onClick: closeModalAndContinue },
-    ],
+      { label: "Tutup", variant: "primary", onClick: closeModalAndContinue }
+    ]
   });
 }
 
 function openHelpModal() {
   showModal({
     eyebrow: "Bantuan",
-    title: "Fitur yang sudah didukung",
+    title: "Fitur yang didukung",
     body: `
       <ul>
-        <li>Kata harian manual dari <code>manualWords</code>.</li>
-        <li>Validasi tebakan manual dari <code>validGuessesByLength</code>.</li>
-        <li>Popup berurutan (panduan → pesan harian → edukasi kemenangan → hasil akhir).</li>
-        <li>Daily lock setelah menang atau kalah.</li>
-        <li>Share harian dalam format emoji.</li>
-        <li>Streak dan best streak berbasis tanggal menang.</li>
+        <li>Kata harian manual dari JSON.</li>
+        <li>Validasi tebakan manual dari JSON.</li>
+        <li>Popup berurutan.</li>
+        <li>Popup edukasi saat menang.</li>
+        <li>Daily lock.</li>
+        <li>Share hasil harian.</li>
+        <li>Streak dan best streak.</li>
       </ul>
     `,
-    actions: [{ label: "Tutup", variant: "primary", onClick: closeModalAndContinue }],
-    skipQueue: true,
+    actions: [
+      { label: "Tutup", variant: "primary", onClick: closeModalAndContinue }
+    ],
+    skipQueue: true
   });
 }
 
@@ -682,10 +699,10 @@ function showModal({ eyebrow, title, body, actions = [], skipQueue = false }) {
   if (state.popupOpen && !skipQueue) return;
 
   state.popupOpen = true;
-  els.modalEyebrow.textContent = eyebrow || "Info";
-  els.modalTitle.textContent = title || "Informasi";
-  els.modalBody.innerHTML = body || "";
-  els.modalActions.innerHTML = "";
+  if (els.modalEyebrow) els.modalEyebrow.textContent = eyebrow || "Info";
+  if (els.modalTitle) els.modalTitle.textContent = title || "Informasi";
+  if (els.modalBody) els.modalBody.innerHTML = body || "";
+  if (els.modalActions) els.modalActions.innerHTML = "";
 
   actions.forEach((action) => {
     const button = document.createElement("button");
@@ -696,7 +713,7 @@ function showModal({ eyebrow, title, body, actions = [], skipQueue = false }) {
     els.modalActions.appendChild(button);
   });
 
-  if (!actions.length) {
+  if (!actions.length && els.modalActions) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "modal-btn primary";
@@ -705,13 +722,17 @@ function showModal({ eyebrow, title, body, actions = [], skipQueue = false }) {
     els.modalActions.appendChild(button);
   }
 
-  els.modalOverlay.classList.remove("hidden");
-  els.modalOverlay.setAttribute("aria-hidden", "false");
+  if (els.modalOverlay) {
+    els.modalOverlay.classList.remove("hidden");
+    els.modalOverlay.setAttribute("aria-hidden", "false");
+  }
 }
 
 function closeModalAndContinue() {
-  els.modalOverlay.classList.add("hidden");
-  els.modalOverlay.setAttribute("aria-hidden", "true");
+  if (els.modalOverlay) {
+    els.modalOverlay.classList.add("hidden");
+    els.modalOverlay.setAttribute("aria-hidden", "true");
+  }
   state.popupOpen = false;
   processPopupQueue();
 }
@@ -733,7 +754,7 @@ async function shareResult(fromModalButton = false) {
     if (navigator.share && !fromModalButton) {
       await navigator.share({
         title: `K3 Wordle ${state.dateLabel}`,
-        text,
+        text
       });
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text);
@@ -761,9 +782,7 @@ async function shareResult(fromModalButton = false) {
 function buildShareText() {
   let score = state.attempts.length;
 
-  if (state.gameLocked && state.result === "win") {
-    score = state.attempts.length;
-  } else if (state.gameLocked && state.result === "lose") {
+  if (state.gameLocked && state.result === "lose") {
     score = "X";
   }
 
@@ -775,7 +794,7 @@ function buildShareText() {
     `K3 Wordle | ${state.dateKey}`,
     `${score}/${state.maxAttempts}`,
     ...lines,
-    `Streak: ${els.streakCount.textContent}`,
+    `Streak: ${els.streakCount ? els.streakCount.textContent : 0}`
   ].join("\n");
 }
 
@@ -806,7 +825,7 @@ function readStorage() {
 
     return {
       stats: { ...defaultStats(), ...(parsed.stats || {}) },
-      daily: typeof parsed.daily === "object" && parsed.daily ? parsed.daily : {},
+      daily: typeof parsed.daily === "object" && parsed.daily ? parsed.daily : {}
     };
   } catch (error) {
     console.warn("STORAGE_READ_ERROR", error);
@@ -821,7 +840,7 @@ function saveStorage(data) {
 function defaultStorage() {
   return {
     stats: defaultStats(),
-    daily: {},
+    daily: {}
   };
 }
 
@@ -829,7 +848,7 @@ function defaultStats() {
   return {
     streak: 0,
     best: 0,
-    lastWinDate: null,
+    lastWinDate: null
   };
 }
 
@@ -840,8 +859,7 @@ function ensureTodayStorage(storage) {
       result: "playing",
       locked: false,
       attempts: [],
-      hasShared: false,
-      hasShownEducationPopup: false,
+      hasShared: false
     };
     saveStorage(storage);
   }
@@ -852,8 +870,7 @@ function syncStateFromStorage(storage) {
     attempts: [],
     result: "playing",
     locked: false,
-    hasShared: false,
-    hasShownEducationPopup: false,
+    hasShared: false
   };
 
   state.attempts = Array.isArray(today.attempts) ? today.attempts : [];
@@ -874,15 +891,18 @@ function syncStateFromStorage(storage) {
 }
 
 function getRow(rowIndex) {
+  if (!els.board) return null;
   return els.board.querySelector(`.board-row[data-row="${rowIndex}"]`);
 }
 
 function setFeedback(message, error = false) {
+  if (!els.feedback) return;
   els.feedback.textContent = message;
   els.feedback.className = `feedback ${error ? "error" : "good"}`;
 }
 
 function showToast(message) {
+  if (!els.toast) return;
   els.toast.textContent = message;
   els.toast.classList.add("show");
 
@@ -921,8 +941,3 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-const DATA_URL = "./daily-k3.json";
-
-const state = {
-  config: null,
-  dateKey: "",
