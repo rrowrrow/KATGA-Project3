@@ -1,7 +1,4 @@
 {
-  "maxGuesses": 6,
-  "showDailyMessageOnLoad": true,
-
   "manualWords": [
     {
       "date": "2026-06-02",
@@ -10,68 +7,27 @@
 
       "message": "Pastikan kondisi fisik dan mental dalam keadaan siap sebelum bekerja. Sapaan sederhana membantu mendeteksi kelelahan, stres, dan kehilangan fokus.",
 
-      "fullMessage": "Sapaan sederhana sebelum memulai pekerjaan merupakan early warning system untuk memastikan setiap pekerja dalam kondisi fit to work secara fisik dan mental.",
-
       "hint": "Kondisi sebelum mulai bekerja",
 
       "meaning": "Siap berarti kondisi fisik dan mental dalam keadaan optimal sebelum bekerja",
 
-      "k3Education": "Kondisi tidak siap seperti kelelahan, stres, atau kehilangan fokus merupakan salah satu penyebab utama kecelakaan kerja",
+      "k3Education": "Kondisi tidak siap seperti kelelahan, stres, atau kehilangan fokus merupakan penyebab utama kecelakaan kerja",
 
-      "dailySafetyMessage": "Pastikan diri dan rekan kerja benar-benar siap sebelum memulai pekerjaan"
+      "dailySafetyMessage": "Pastikan diri dan rekan kerja benar-benar siap sebelum bekerja"
     }
   ],
 
   "fallbackWords": [
     {
       "word": "AMAN",
-      "category": "Keselamatan",
-
-      "clue": "Tujuan utama dalam bekerja",
-      "message": "Selalu utamakan keselamatan dalam setiap pekerjaan",
-
-      "meaning": "Aman berarti bebas dari potensi bahaya",
-
-      "k3Education": "Keselamatan kerja bertujuan mencegah kecelakaan dan menjaga pekerja tetap selamat",
-
-      "dailySafetyMessage": "Bekerja aman adalah prioritas utama"
-    },
-    {
-      "word": "APD",
-      "category": "Perlengkapan",
-
-      "clue": "Perlengkapan pelindung pekerja",
-      "message": "Gunakan alat pelindung diri sebelum memulai pekerjaan",
-
-      "meaning": "Alat Pelindung Diri",
-
-      "k3Education": "APD melindungi pekerja dari bahaya fisik, kimia, dan lingkungan",
-
-      "dailySafetyMessage": "Gunakan APD sesuai standar sebelum bekerja"
+      "message": "Utamakan keselamatan dalam bekerja",
+      "meaning": "Bebas dari bahaya",
+      "k3Education": "Keselamatan kerja melindungi pekerja",
+      "dailySafetyMessage": "Selalu utamakan keselamatan"
     }
   ],
 
   "validGuessesByLength": {
-    "3": [
-      "APD",
-      "LAS",
-      "BOR",
-      "REM"
-    ],
-    "4": [
-      "SIAP",
-      "AMAN",
-      "IZIN",
-      "HELM",
-      "ALAT",
-      "JAGA",
-      "CEGAH"
-    ],
-    "5": [
-      "RAMBU",
-      "KERJA",
-      "RISIK",
-      "TANDA"
-    ]
+    "4": ["SIAP", "AMAN"]
   }
 }
