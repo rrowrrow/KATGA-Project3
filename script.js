@@ -1,14 +1,11 @@
-const STORAGE_KEY = "k3wordle_daily_v4";
-const DATA_URL = "./daily-k3.json";
-
-const state = {
-  config: null,
-  dateKey: "",
-  dateLabel: "",
+const STORAGE_KEY = "k3wordle_daily_v5";const STORAGE_KEY = ": "",
   answer: "",
   clue: "",
   message: "",
   category: "",
+  meaning: "",
+  k3Education: "",
+  dailySafetyMessage: "",
   maxAttempts: 6,
   attempts: [],
   current: "",
@@ -169,18 +166,21 @@ function setupPuzzle(config) {
   state.clue = todayData.clue || "Tebak kata K3 hari ini.";
   state.message = todayData.message || "Selalu utamakan keselamatan kerja.";
   state.category = todayData.category || "K3";
+  state.meaning = todayData.meaning || "Makna kata belum diisi.";
+  state.k3Education = todayData.k3Education || "Edukasi K3 belum diisi.";
+  state.dailySafetyMessage =
+    todayData.dailySafetyMessage ||
+    todayData.message ||
+    "Utamakan keselamatan dalam setiap aktivitas kerja.";
 
-  // Valid guesses manual berdasarkan panjang kata
   const byLength = config.validGuessesByLength || {};
   const candidateList = byLength[String(state.answer.length)] || [];
 
-  // Pastikan jawaban harian selalu termasuk kata valid
   state.validGuessSet = new Set(
     candidateList.map(normalizeWord).filter(Boolean)
   );
   state.validGuessSet.add(state.answer);
 
-  // UI
   document.title = `K3 Wordle Harian - ${state.dateLabel}`;
   els.title.textContent = `K3 Wordle (${state.answer.length} huruf)`;
   els.subTitle.textContent = state.message;
@@ -345,9 +345,8 @@ function submitGuess() {
     return;
   }
 
-  // VALIDASI MANUAL KBBI DARI JSON
   if (state.validGuessSet.size > 0 && !state.validGuessSet.has(guess)) {
-    setFeedback("Kata tidak ada dalam daftar valid KBBI yang kamu masukkan.", true);
+    setFeedback("Kata tidak ada dalam daftar valid yang kamu masukkan.", true);
     showToast("Kata tidak valid.");
     return;
   }
@@ -371,6 +370,7 @@ function submitGuess() {
     locked: false,
     attempts: state.attempts,
     hasShared: state.hasSharedToday,
+    hasShownEducationPopup: false,
   };
 
   if (guess === state.answer) {
@@ -391,7 +391,6 @@ function evaluateGuess(guess, answer) {
   const result = Array.from({ length: answer.length }, () => "absent");
   const used = Array(answer.length).fill(false);
 
-  // pass 1: correct
   for (let i = 0; i < guess.length; i += 1) {
     if (guess[i] === answer[i]) {
       result[i] = "correct";
@@ -399,7 +398,6 @@ function evaluateGuess(guess, answer) {
     }
   }
 
-  // pass 2: present
   for (let i = 0; i < guess.length; i += 1) {
     if (result[i] === "correct") continue;
 
@@ -464,6 +462,7 @@ function finishGame(type, storage) {
 
   const isWin = type === "win";
 
+  const previousTodayData = storage.daily[state.dateKey] || {};
   storage.daily[state.dateKey] = {
     date: state.dateKey,
     result: type,
@@ -471,6 +470,7 @@ function finishGame(type, storage) {
     attempts: state.attempts,
     completedAt: new Date().toISOString(),
     hasShared: state.hasSharedToday,
+    hasShownEducationPopup: previousTodayData.hasShownEducationPopup || false,
   };
 
   storage.stats = updateStats(storage.stats, state.dateKey, isWin);
@@ -484,6 +484,11 @@ function finishGame(type, storage) {
     els.statusLabel.textContent = "Menang";
     setFeedback(`Benar! Kata hari ini adalah ${state.answer}.`, false);
     showToast("Mantap, tebakan benar!");
+
+    // Popup edukasi setelah jawaban benar
+    enqueueWinEducationPopup();
+    storage.daily[state.dateKey].hasShownEducationPopup = true;
+    saveStorage(storage);
   } else {
     els.statusLabel.textContent = "Kalah";
     setFeedback(`Kesempatan habis. Jawaban hari ini: ${state.answer}.`, true);
@@ -492,6 +497,21 @@ function finishGame(type, storage) {
 
   enqueueResultPopup(isWin);
   processPopupQueue();
+}
+
+function enqueueWinEducationPopup() {
+  state.popupQueue.push({
+    eyebrow: "Edukasi Hari Ini",
+    title: `Makna Kata: ${state.answer}`,
+    body: `
+      <p><strong>Makna kata:</strong><br>${escapeHtml(state.meaning)}</p>
+      <p><strong>Edukasi K3 terkait:</strong><br>${escapeHtml(state.k3Education)}</p>
+      <p><strong>Pesan keselamatan harian:</strong><br>${escapeHtml(state.dailySafetyMessage)}</p>
+    `,
+    actions: [
+      { label: "Lanjut", variant: "primary", onClick: closeModalAndContinue }
+    ],
+  });
 }
 
 function updateStats(stats = defaultStats(), dateKey, win) {
@@ -559,9 +579,9 @@ function queueStartupPopups() {
           <li><strong>Hijau</strong>: huruf benar dan posisi benar.</li>
           <li><strong>Kuning</strong>: huruf ada, tapi posisi belum tepat.</li>
           <li><strong>Abu</strong>: huruf tidak ada di jawaban.</li>
-          <li><strong>Validasi kata</strong>: tebakan harus ada di daftar valid KBBI yang kamu isi manual di <code>daily-k3.json</code>.</li>
+          <li><strong>Validasi kata</strong>: tebakan harus ada di daftar kata valid yang kamu isi manual di <code>daily-k3.json</code>.</li>
         </ul>
-        <p>Setelah puzzle selesai, game otomatis <strong>daily lock</strong> sampai tanggal berikutnya.</p>
+        <p>Jika berhasil, akan muncul popup edukasi tentang makna kata dan pesan K3 hari ini.</p>
       `,
       actions: [
         {
@@ -589,6 +609,19 @@ function queueStartupPopups() {
   }
 
   if (state.gameLocked) {
+    const storage = readStorage();
+    const todayData = storage.daily[state.dateKey];
+
+    if (
+      todayData &&
+      todayData.result === "win" &&
+      !todayData.hasShownEducationPopup
+    ) {
+      enqueueWinEducationPopup();
+      todayData.hasShownEducationPopup = true;
+      saveStorage(storage);
+    }
+
     enqueueResultPopup(state.result === "win", true);
   }
 }
@@ -606,7 +639,7 @@ function enqueueResultPopup(isWin, fromRestore = false) {
           : "Kesempatan hari ini sudah habis. Tidak apa, lanjut lagi besok!"
       }</p>
       <p><strong>Daily lock aktif</strong> sampai puzzle berikutnya tersedia.</p>
-      <div class="share-preview">${escapeHtml(sharePreview)}</div>
+      <div class="share-preview">${escapeHtml(buildShareText())}</div>
       <p>${
         fromRestore
           ? "Status ini dipulihkan dari progress yang tersimpan di browser."
@@ -628,7 +661,7 @@ function openHelpModal() {
       <ul>
         <li>Kata harian manual dari <code>manualWords</code>.</li>
         <li>Validasi tebakan manual dari <code>validGuessesByLength</code>.</li>
-        <li>Popup berurutan (panduan → pesan harian → hasil akhir).</li>
+        <li>Popup berurutan (panduan → pesan harian → edukasi kemenangan → hasil akhir).</li>
         <li>Daily lock setelah menang atau kalah.</li>
         <li>Share harian dalam format emoji.</li>
         <li>Streak dan best streak berbasis tanggal menang.</li>
@@ -808,6 +841,7 @@ function ensureTodayStorage(storage) {
       locked: false,
       attempts: [],
       hasShared: false,
+      hasShownEducationPopup: false,
     };
     saveStorage(storage);
   }
@@ -819,6 +853,7 @@ function syncStateFromStorage(storage) {
     result: "playing",
     locked: false,
     hasShared: false,
+    hasShownEducationPopup: false,
   };
 
   state.attempts = Array.isArray(today.attempts) ? today.attempts : [];
@@ -886,3 +921,8 @@ function escapeHtml(value) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+const DATA_URL = "./daily-k3.json";
+
+const state = {
+  config: null,
+  dateKey: "",
