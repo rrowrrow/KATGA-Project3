@@ -39,7 +39,6 @@
     ]
   }
 }
-``
   "maxGuesses": 6,
   "showDailyMessageOnLoad": true,
   "manualWords": [
