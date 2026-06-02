@@ -1,14 +1,21 @@
 {
-  "version": 2,
+  "version": 3,
   "maxGuesses": 6,
   "showDailyMessageOnLoad": true,
   "manualWords": [
     {
-      "date": "2026-06-02",
+      "date": "2026-06-01",
       "word": "RAMBU",
       "category": "Area Kerja",
       "clue": "Petunjuk visual keselamatan di area kerja.",
       "message": "Patuhi rambu keselamatan sebelum mulai bekerja."
+    },
+    {
+      "date": "2026-06-02",
+      "word": "APD",
+      "category": "Perlengkapan",
+      "clue": "Perlengkapan wajib sesuai risiko kerja.",
+      "message": "Gunakan APD sesuai risiko dan pastikan ukurannya sesuai."
     },
     {
       "date": "2026-06-03",
@@ -57,5 +64,46 @@
       "clue": "Pelindung pernapasan sesuai paparan.",
       "message": "Pastikan masker sesuai jenis risiko di area kerja."
     }
-  ]
+  ],
+  "validGuessesByLength": {
+    "3": [
+      "APD",
+      "LAS",
+      "PPE",
+      "BOR",
+      "REM"
+    ],
+    "4": [
+      "AMAN",
+      "IZIN",
+      "HELM",
+      "RISI",
+      "MASK",
+      "BORA",
+      "JAGA",
+      "AMAN",
+      "ALAT"
+    ],
+    "5": [
+      "RAMBU",
+      "ALARM",
+      "AMANI",
+      "KERJA",
+      "TANDA",
+      "CEGAH"
+    ],
+    "6": [
+      "RISIKO",
+      "MASKER",
+      "INSIDEN",
+      "BAHAYA",
+      "AMANAH"
+    ],
+    "7": [
+      "SARUNG",
+      "BAHAYA",
+      "PROTEK",
+      "PELAPOR"
+    ]
+  }
 }
