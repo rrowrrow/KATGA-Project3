@@ -1,4 +1,4 @@
-const STORAGE_KEY = "k3wordle_daily_v3";
+const STORAGE_KEY = "k3wordle_daily_v4";
 const DATA_URL = "./daily-k3.json";
 
 const state = {
@@ -15,9 +15,9 @@ const state = {
   gameLocked: false,
   result: "playing", // playing | win | lose
   hasSharedToday: false,
-  introPopupShownThisSession: false,
   popupQueue: [],
   popupOpen: false,
+  validGuessSet: new Set(),
 };
 
 const els = {};
@@ -71,8 +71,7 @@ function bindEvents() {
   });
 
   document.addEventListener("keydown", (event) => {
-    if (state.popupOpen) return;
-    if (state.gameLocked) return;
+    if (state.popupOpen || state.gameLocked) return;
 
     if (event.key === "Enter") {
       submitGuess();
@@ -162,6 +161,7 @@ function setupPuzzle(config) {
   }
 
   state.answer = normalizeWord(todayData.word);
+
   if (!state.answer) {
     throw new Error("Word harian kosong atau berisi karakter yang tidak valid.");
   }
@@ -170,6 +170,17 @@ function setupPuzzle(config) {
   state.message = todayData.message || "Selalu utamakan keselamatan kerja.";
   state.category = todayData.category || "K3";
 
+  // Valid guesses manual berdasarkan panjang kata
+  const byLength = config.validGuessesByLength || {};
+  const candidateList = byLength[String(state.answer.length)] || [];
+
+  // Pastikan jawaban harian selalu termasuk kata valid
+  state.validGuessSet = new Set(
+    candidateList.map(normalizeWord).filter(Boolean)
+  );
+  state.validGuessSet.add(state.answer);
+
+  // UI
   document.title = `K3 Wordle Harian - ${state.dateLabel}`;
   els.title.textContent = `K3 Wordle (${state.answer.length} huruf)`;
   els.subTitle.textContent = state.message;
@@ -334,6 +345,13 @@ function submitGuess() {
     return;
   }
 
+  // VALIDASI MANUAL KBBI DARI JSON
+  if (state.validGuessSet.size > 0 && !state.validGuessSet.has(guess)) {
+    setFeedback("Kata tidak ada dalam daftar valid KBBI yang kamu masukkan.", true);
+    showToast("Kata tidak valid.");
+    return;
+  }
+
   const evaluation = evaluateGuess(guess, state.answer);
   const attempt = { word: guess, evaluation };
   state.attempts.push(attempt);
@@ -373,7 +391,7 @@ function evaluateGuess(guess, answer) {
   const result = Array.from({ length: answer.length }, () => "absent");
   const used = Array(answer.length).fill(false);
 
-  // PASS 1: correct
+  // pass 1: correct
   for (let i = 0; i < guess.length; i += 1) {
     if (guess[i] === answer[i]) {
       result[i] = "correct";
@@ -381,7 +399,7 @@ function evaluateGuess(guess, answer) {
     }
   }
 
-  // PASS 2: present
+  // pass 2: present
   for (let i = 0; i < guess.length; i += 1) {
     if (result[i] === "correct") continue;
 
@@ -488,7 +506,6 @@ function updateStats(stats = defaultStats(), dateKey, win) {
     return nextStats;
   }
 
-  // Hindari double-count kalau user refresh setelah menang di hari yang sama
   if (nextStats.lastWinDate === dateKey) {
     return nextStats;
   }
@@ -529,8 +546,10 @@ function syncControlState() {
 }
 
 function queueStartupPopups() {
-  // Popup 1: panduan
-  if (!state.introPopupShownThisSession) {
+  const introKey = `k3wordle_intro_seen_${state.dateKey}`;
+  const introSeen = sessionStorage.getItem(introKey) === "1";
+
+  if (!introSeen) {
     state.popupQueue.push({
       eyebrow: "Panduan",
       title: "Cara main K3 Wordle",
@@ -540,18 +559,23 @@ function queueStartupPopups() {
           <li><strong>Hijau</strong>: huruf benar dan posisi benar.</li>
           <li><strong>Kuning</strong>: huruf ada, tapi posisi belum tepat.</li>
           <li><strong>Abu</strong>: huruf tidak ada di jawaban.</li>
+          <li><strong>Validasi kata</strong>: tebakan harus ada di daftar valid KBBI yang kamu isi manual di <code>daily-k3.json</code>.</li>
         </ul>
         <p>Setelah puzzle selesai, game otomatis <strong>daily lock</strong> sampai tanggal berikutnya.</p>
       `,
       actions: [
-        { label: "Siap main", variant: "primary", onClick: closeModalAndContinue }
+        {
+          label: "Siap main",
+          variant: "primary",
+          onClick: () => {
+            sessionStorage.setItem(introKey, "1");
+            closeModalAndContinue();
+          },
+        },
       ],
     });
-
-    state.introPopupShownThisSession = true;
   }
 
-  // Popup 2: pesan harian
   if (state.config && state.config.showDailyMessageOnLoad) {
     state.popupQueue.push({
       eyebrow: "Pesan Harian",
@@ -560,13 +584,10 @@ function queueStartupPopups() {
         <p><strong>Petunjuk:</strong> ${escapeHtml(state.clue)}</p>
         <p>${escapeHtml(state.message)}</p>
       `,
-      actions: [
-        { label: "Lanjut", variant: "primary", onClick: closeModalAndContinue }
-      ],
+      actions: [{ label: "Lanjut", variant: "primary", onClick: closeModalAndContinue }],
     });
   }
 
-  // Kalau puzzle hari ini sudah lock dari localStorage, munculkan popup hasil juga
   if (state.gameLocked) {
     enqueueResultPopup(state.result === "win", true);
   }
@@ -605,12 +626,12 @@ function openHelpModal() {
     title: "Fitur yang sudah didukung",
     body: `
       <ul>
-        <li>Kata manual harian dari file <code>daily-k3.json</code>.</li>
+        <li>Kata harian manual dari <code>manualWords</code>.</li>
+        <li>Validasi tebakan manual dari <code>validGuessesByLength</code>.</li>
         <li>Popup berurutan (panduan → pesan harian → hasil akhir).</li>
         <li>Daily lock setelah menang atau kalah.</li>
         <li>Share harian dalam format emoji.</li>
         <li>Streak dan best streak berbasis tanggal menang.</li>
-        <li>Progress harian tersimpan di browser.</li>
       </ul>
     `,
     actions: [{ label: "Tutup", variant: "primary", onClick: closeModalAndContinue }],
