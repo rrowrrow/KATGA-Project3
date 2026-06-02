@@ -25,7 +25,7 @@
     }
   ],
   "validGuessesByLength": {
-    "3": ["APD"],
+    "3": ["APD""SOP""LAS""BOR""API"],
     "4": ["AMAN"]
   }
 }
