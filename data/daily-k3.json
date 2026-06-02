@@ -4,12 +4,12 @@
   "manualWords": [
     {
       "date": "2026-06-02",
-      "word": "APD",
-      "category": "Perlengkapan",
-      "clue": "Perlengkapan wajib kerja",
-      "message": "Gunakan APD sebelum bekerja",
-      "meaning": "Alat Pelindung Diri",
-      "k3Education": "APD digunakan untuk melindungi pekerja dari bahaya di tempat kerja.",
+      "word": "CEGAH",
+      "category": "apa ya",
+      "clue": "-",
+      "message": "-",
+      "meaning": "-",
+      "k3Education": "-",
       "dailySafetyMessage": "Gunakan APD sesuai standar sebelum memulai pekerjaan."
     }
   ],
@@ -25,7 +25,7 @@
     }
   ],
   "validGuessesByLength": {
-    "3": ["APD","SOP","LAS","BOR","API"],
+    "3": ["LARUT","PAPAR","RAMBU","KELAS","SAKIT"],
     "4": ["AMAN"]
   }
 }
