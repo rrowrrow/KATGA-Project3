@@ -33,6 +33,7 @@ function mapElements() {
   els.bestCount = document.getElementById("bestCount");
   els.statusLabel = document.getElementById("statusLabel");
   els.dateLabel = document.getElementById("dateLabel");
+
   els.readerSection = document.getElementById("readerSection");
   els.messageTitle = document.getElementById("messageTitle");
   els.messageCategory = document.getElementById("messageCategory");
@@ -41,6 +42,7 @@ function mapElements() {
   els.confirmRead = document.getElementById("confirmRead");
   els.startGameBtn = document.getElementById("startGameBtn");
   els.readerHint = document.getElementById("readerHint");
+
   els.gameSection = document.getElementById("gameSection");
   els.wordLengthBadge = document.getElementById("wordLengthBadge");
   els.gameHint = document.getElementById("gameHint");
@@ -50,38 +52,70 @@ function mapElements() {
   els.backspaceBtn = document.getElementById("backspaceBtn");
   els.submitBtn = document.getElementById("submitBtn");
   els.keyboard = document.getElementById("keyboard");
+
   els.helpBtn = document.getElementById("helpBtn");
   els.shareBtn = document.getElementById("shareBtn");
+
   els.modalOverlay = document.getElementById("modalOverlay");
   els.modalEyebrow = document.getElementById("modalEyebrow");
   els.modalTitle = document.getElementById("modalTitle");
   els.modalBody = document.getElementById("modalBody");
   els.modalActions = document.getElementById("modalActions");
   els.modalCloseBtn = document.getElementById("modalCloseBtn");
+
   els.toast = document.getElementById("toast");
 }
 
 function bindEvents() {
-  els.messageScrollBox.addEventListener("scroll", refreshReaderAccess);
-  els.confirmRead.addEventListener("change", updateStartButtonState);
-  els.startGameBtn.addEventListener("click", startGame);
-  els.guessInput.addEventListener("input", handleInputChange);
-  els.guessInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      submitGuess();
-    }
-  });
-  els.backspaceBtn.addEventListener("click", removeLastChar);
-  els.submitBtn.addEventListener("click", submitGuess);
-  els.helpBtn.addEventListener("click", openHelpModal);
-  els.shareBtn.addEventListener("click", () => shareResult(false));
-  els.modalCloseBtn.addEventListener("click", closeModalAndContinue);
-  els.modalOverlay.addEventListener("click", (event) => {
-    if (event.target === els.modalOverlay) {
-      closeModalAndContinue();
-    }
-  });
+  if (els.messageScrollBox) {
+    els.messageScrollBox.addEventListener("scroll", refreshReaderAccess);
+  }
+
+  if (els.confirmRead) {
+    els.confirmRead.addEventListener("change", updateStartButtonState);
+  }
+
+  if (els.startGameBtn) {
+    els.startGameBtn.addEventListener("click", startGame);
+  }
+
+  if (els.guessInput) {
+    els.guessInput.addEventListener("input", handleInputChange);
+    els.guessInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        submitGuess();
+      }
+    });
+  }
+
+  if (els.backspaceBtn) {
+    els.backspaceBtn.addEventListener("click", removeLastChar);
+  }
+
+  if (els.submitBtn) {
+    els.submitBtn.addEventListener("click", submitGuess);
+  }
+
+  if (els.helpBtn) {
+    els.helpBtn.addEventListener("click", openHelpModal);
+  }
+
+  if (els.shareBtn) {
+    els.shareBtn.addEventListener("click", () => shareResult(false));
+  }
+
+  if (els.modalCloseBtn) {
+    els.modalCloseBtn.addEventListener("click", closeModalAndContinue);
+  }
+
+  if (els.modalOverlay) {
+    els.modalOverlay.addEventListener("click", (event) => {
+      if (event.target === els.modalOverlay) {
+        closeModalAndContinue();
+      }
+    });
+  }
 
   window.addEventListener("resize", refreshReaderAccess);
 
@@ -130,18 +164,22 @@ async function init() {
     const today = new Date();
     state.todayKey = formatDate(today);
 
-    els.dateLabel.textContent = today.toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric"
-    });
+    if (els.dateLabel) {
+      els.dateLabel.textContent = today.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+    }
 
     state.todayData = getTodayWord(data, state.todayKey, today);
+
     if (!state.todayData || !state.todayData.word) {
       throw new Error("Kata harian tidak ditemukan di data JSON");
     }
 
     state.answer = normalizeWord(state.todayData.word);
+
     if (!state.answer) {
       throw new Error("Word harian tidak valid");
     }
@@ -163,9 +201,20 @@ async function init() {
     processPopupQueue();
   } catch (err) {
     console.error(err);
-    els.statusLabel.textContent = "Error";
-    els.messageTitle.textContent = "Gagal memuat game";
-    els.messageFullText.textContent = err.message;
+
+    if (els.statusLabel) {
+      els.statusLabel.textContent = "Error";
+    }
+
+    if (els.messageTitle) {
+      els.messageTitle.textContent = "Gagal memuat game";
+    }
+
+    if (els.messageFullText) {
+      els.messageFullText.textContent = err.message;
+    }
+
+    setFeedback(err.message, true);
   }
 }
 
@@ -184,22 +233,44 @@ function getTodayWord(config, todayKey, todayDate) {
 }
 
 function applyTodayDataToUI() {
-  els.messageTitle.textContent = "Pesan Harian HSSE";
-  els.messageCategory.textContent = state.todayData.category || "-";
+  if (!state.todayData) return;
 
-  const fullText = state.todayData.fullMessage || state.todayData.message || "Pesan belum tersedia.";
-  els.messageFullText.textContent = fullText;
+  if (els.messageTitle) {
+    els.messageTitle.textContent = "Pesan Harian HSSE";
+  }
 
-  const hint = state.todayData.hint || "Tebak kata kunci dari pesan hari ini";
-  els.gameHint.textContent = `Hint: ${hint}`;
-  els.wordLengthBadge.textContent = `${state.answer.length} huruf`;
-  els.statusLabel.textContent = state.locked ? "Terkunci" : "Siap";
+  if (els.messageCategory) {
+    els.messageCategory.textContent = state.todayData.category || "-";
+  }
+
+  const fullText =
+    state.todayData.fullMessage ||
+    state.todayData.message ||
+    "Pesan belum tersedia.";
+
+  if (els.messageFullText) {
+    els.messageFullText.textContent = fullText;
+  }
+
+  if (els.gameHint) {
+    const hint = state.todayData.hint || "Tebak kata kunci dari pesan hari ini";
+    els.gameHint.textContent = `Hint: ${hint}`;
+  }
+
+  if (els.wordLengthBadge) {
+    els.wordLengthBadge.textContent = `${state.answer.length} huruf`;
+  }
+
+  if (els.statusLabel) {
+    els.statusLabel.textContent = state.locked ? "Terkunci" : "Siap";
+  }
 }
 
 function refreshReaderAccess() {
-  const el = els.messageScrollBox;
-  if (!el) return;
+  if (!els.messageScrollBox || !els.confirmRead || !els.readerHint) return;
+  if (state.hasReadMessage) return;
 
+  const el = els.messageScrollBox;
   const noScrollNeeded = el.scrollHeight <= el.clientHeight + 8;
   const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 8;
 
@@ -216,14 +287,25 @@ function refreshReaderAccess() {
 }
 
 function updateStartButtonState() {
+  if (!els.startGameBtn || !els.confirmRead) return;
   els.startGameBtn.disabled = !(els.confirmRead.checked && !els.confirmRead.disabled);
 }
 
 function startGame() {
   state.hasReadMessage = true;
-  els.readerSection.classList.add("hidden");
-  els.gameSection.classList.remove("hidden");
-  els.statusLabel.textContent = state.locked ? "Terkunci" : "Main";
+
+  if (els.readerSection) {
+    els.readerSection.classList.add("hidden");
+  }
+
+  if (els.gameSection) {
+    els.gameSection.classList.remove("hidden");
+  }
+
+  if (els.statusLabel) {
+    els.statusLabel.textContent = state.locked ? "Terkunci" : "Main";
+  }
+
   setFeedback("Mulai tebak kata kunci hari ini.", false);
 
   const stored = readStorage();
@@ -232,11 +314,15 @@ function startGame() {
   saveStorage(stored);
 
   requestAnimationFrame(() => {
-    els.guessInput.focus();
+    if (els.guessInput && !state.locked) {
+      els.guessInput.focus();
+    }
   });
 }
 
 function createBoard() {
+  if (!els.board) return;
+
   els.board.innerHTML = "";
 
   for (let rowIndex = 0; rowIndex < state.maxAttempts; rowIndex += 1) {
@@ -258,6 +344,8 @@ function createBoard() {
 }
 
 function createKeyboard() {
+  if (!els.keyboard) return;
+
   const layouts = [
     ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
     ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
@@ -304,8 +392,11 @@ function handleVirtualKey(keyValue) {
   }
 
   if (state.current.length >= state.answer.length) return;
+
   state.current += keyValue;
-  els.guessInput.value = state.current;
+  if (els.guessInput) {
+    els.guessInput.value = state.current;
+  }
   renderCurrentRow();
 }
 
@@ -345,7 +436,11 @@ function removeLastChar() {
   if (state.locked || !state.hasReadMessage) return;
 
   state.current = state.current.slice(0, -1);
-  els.guessInput.value = state.current;
+
+  if (els.guessInput) {
+    els.guessInput.value = state.current;
+  }
+
   renderCurrentRow();
 }
 
@@ -361,6 +456,7 @@ function submitGuess() {
   }
 
   const guess = normalizeWord(state.current);
+
   if (guess.length !== state.answer.length) {
     setFeedback(`Jumlah huruf harus ${state.answer.length}.`, true);
     return;
@@ -378,8 +474,12 @@ function submitGuess() {
 
   paintRow(state.attempts.length - 1, guess, evaluation);
   colorKeyboard();
+
   state.current = "";
-  els.guessInput.value = "";
+  if (els.guessInput) {
+    els.guessInput.value = "";
+  }
+
   persistPlayingState();
 
   if (guess === state.answer) {
@@ -481,6 +581,7 @@ function finishGame(isWin) {
   if (isWin) {
     setFeedback(`Benar! Kata kuncinya: ${state.answer}`, false);
     showToast("Jawaban benar.");
+
     state.popupQueue.push({
       eyebrow: "Edukasi Hari Ini",
       title: `Jawaban: ${state.todayData.word}`,
@@ -560,16 +661,29 @@ function showModal({ eyebrow, title, body, actions = [], skipQueue = false }) {
 
   state.popupOpen = true;
   state.lastFocusedElement = document.activeElement;
-  els.modalEyebrow.textContent = eyebrow || "Info";
-  els.modalTitle.textContent = title || "Informasi";
-  els.modalBody.innerHTML = body || "";
-  els.modalActions.innerHTML = "";
 
-  if (!actions.length) {
-    actions = [{ label: "Tutup", variant: "primary", onClick: closeModalAndContinue }];
+  if (els.modalEyebrow) {
+    els.modalEyebrow.textContent = eyebrow || "Info";
   }
 
-  actions.forEach((action) => {
+  if (els.modalTitle) {
+    els.modalTitle.textContent = title || "Informasi";
+  }
+
+  if (els.modalBody) {
+    els.modalBody.innerHTML = body || "";
+  }
+
+  if (els.modalActions) {
+    els.modalActions.innerHTML = "";
+  }
+
+  let finalActions = actions;
+  if (!finalActions.length) {
+    finalActions = [{ label: "Tutup", variant: "primary", onClick: closeModalAndContinue }];
+  }
+
+  finalActions.forEach((action) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = `modal-btn ${action.variant === "secondary" ? "secondary" : "primary"}`;
@@ -588,6 +702,8 @@ function showModal({ eyebrow, title, body, actions = [], skipQueue = false }) {
 }
 
 function closeModalAndContinue() {
+  if (!els.modalOverlay) return;
+
   state.popupOpen = false;
   els.modalOverlay.classList.add("hidden");
   els.modalOverlay.setAttribute("aria-hidden", "true");
@@ -614,7 +730,7 @@ function shareResult(fromPopup) {
           title: "KATGA",
           text
         });
-      } else if (navigator.clipboard?.writeText) {
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(text);
       } else {
         fallbackCopy(text);
@@ -636,8 +752,16 @@ function shareResult(fromPopup) {
 }
 
 function buildShareText() {
-  const score = state.result === "win" ? state.attempts.length : state.locked ? "X" : state.attempts.length;
-  const lines = state.attempts.map((attempt) => attempt.evaluation.map(toEmoji).join(""));
+  const score =
+    state.result === "win"
+      ? state.attempts.length
+      : state.locked
+      ? "X"
+      : state.attempts.length;
+
+  const lines = state.attempts.map((attempt) =>
+    attempt.evaluation.map(toEmoji).join("")
+  );
 
   return [
     `KATGA | ${state.todayKey}`,
@@ -667,6 +791,7 @@ function fallbackCopy(text) {
 function restoreProgress() {
   const storage = readStorage();
   ensureTodayStorage(storage);
+
   const todayState = storage.daily[state.todayKey];
 
   state.attempts = Array.isArray(todayState.attempts) ? todayState.attempts : [];
@@ -676,14 +801,20 @@ function restoreProgress() {
   state.hasReadMessage = Boolean(todayState.hasReadMessage);
 
   if (state.hasReadMessage) {
-    els.readerSection.classList.add("hidden");
-    els.gameSection.classList.remove("hidden");
+    if (els.readerSection) {
+      els.readerSection.classList.add("hidden");
+    }
+
+    if (els.gameSection) {
+      els.gameSection.classList.remove("hidden");
+    }
   }
 }
 
 function persistPlayingState() {
   const storage = readStorage();
   ensureTodayStorage(storage);
+
   storage.daily[state.todayKey] = {
     date: state.todayKey,
     result: "playing",
@@ -692,33 +823,55 @@ function persistPlayingState() {
     hasShared: state.hasSharedToday,
     hasReadMessage: true
   };
+
   saveStorage(storage);
 }
 
 function syncGameState() {
-  els.guessInput.disabled = state.locked || !state.hasReadMessage;
-  els.submitBtn.disabled = state.locked || !state.hasReadMessage;
-  els.backspaceBtn.disabled = state.locked || !state.hasReadMessage;
+  if (els.guessInput) {
+    els.guessInput.disabled = state.locked || !state.hasReadMessage;
+  }
 
-  if (state.locked) {
-    els.statusLabel.textContent = state.result === "win" ? "Menang" : "Selesai";
-  } else if (state.hasReadMessage) {
-    els.statusLabel.textContent = "Main";
-  } else {
-    els.statusLabel.textContent = "Baca Dulu";
+  if (els.submitBtn) {
+    els.submitBtn.disabled = state.locked || !state.hasReadMessage;
+  }
+
+  if (els.backspaceBtn) {
+    els.backspaceBtn.disabled = state.locked || !state.hasReadMessage;
+  }
+
+  if (els.statusLabel) {
+    if (state.locked) {
+      els.statusLabel.textContent = state.result === "win" ? "Menang" : "Selesai";
+    } else if (state.hasReadMessage) {
+      els.statusLabel.textContent = "Main";
+    } else {
+      els.statusLabel.textContent = "Baca Dulu";
+    }
   }
 }
 
 function updateStatsUI() {
   const storage = readStorage();
   const stats = storage.stats || defaultStats();
-  els.streakCount.textContent = String(stats.streak || 0);
-  els.bestCount.textContent = String(stats.best || 0);
+
+  if (els.streakCount) {
+    els.streakCount.textContent = String(stats.streak || 0);
+  }
+
+  if (els.bestCount) {
+    els.bestCount.textContent = String(stats.best || 0);
+  }
 }
 
 function updateStatsUIFrom(stats) {
-  els.streakCount.textContent = String(stats.streak || 0);
-  els.bestCount.textContent = String(stats.best || 0);
+  if (els.streakCount) {
+    els.streakCount.textContent = String(stats.streak || 0);
+  }
+
+  if (els.bestCount) {
+    els.bestCount.textContent = String(stats.best || 0);
+  }
 }
 
 function updateStats(stats = defaultStats(), dateKey, isWin) {
@@ -799,17 +952,22 @@ function ensureTodayStorage(storage) {
 }
 
 function getRow(index) {
+  if (!els.board) return null;
   return els.board.querySelector(`.board-row[data-row="${index}"]`);
 }
 
 function setFeedback(message, isError) {
+  if (!els.feedback) return;
   els.feedback.textContent = message;
   els.feedback.style.color = isError ? "#d9534f" : "#5f738d";
 }
 
 function showToast(message) {
+  if (!els.toast) return;
+
   els.toast.textContent = message;
   els.toast.classList.add("show");
+
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     els.toast.classList.remove("show");
