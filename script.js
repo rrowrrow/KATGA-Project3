@@ -1,5 +1,5 @@
 const STORAGE_KEY = "katga_beta_v1";
-const DATA_URL = "./daily-k3.json";
+const DATA_URL = "./data/daily-k3.json";
 
 const state = {
   config: null,
