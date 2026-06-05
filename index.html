@@ -2,9 +2,13 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <meta name="theme-color" content="#00529b" />
   <title>KATGA - Kata-Kata K3</title>
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,9 +19,14 @@
         <h1>KATGA</h1>
         <p class="subtitle">Kata-Kata K3 Harian</p>
       </div>
+
       <div class="hero-actions">
-        <button id="helpBtn" class="ghost-btn" type="button">Panduan</button>
-        <button id="shareBtn" class="primary-btn" type="button">Share</button>
+        <button id="helpBtn" class="ghost-btn" type="button">
+          Panduan
+        </button>
+        <button id="shareBtn" class="primary-btn" type="button">
+          Share
+        </button>
       </div>
     </header>
 
@@ -26,14 +35,17 @@
         <span>Streak</span>
         <strong id="streakCount">0</strong>
       </div>
+
       <div class="stat-item">
         <span>Best</span>
         <strong id="bestCount">0</strong>
       </div>
+
       <div class="stat-item">
         <span>Status</span>
         <strong id="statusLabel">Memuat</strong>
       </div>
+
       <div class="stat-item">
         <span>Tanggal</span>
         <strong id="dateLabel">-</strong>
@@ -50,7 +62,9 @@
       </div>
 
       <div class="message-meta">
-        <div><strong id="messageTitle">Memuat pesan...</strong></div>
+        <div>
+          <strong id="messageTitle">Memuat pesan...</strong>
+        </div>
         <div id="messageCategory" class="message-category">-</div>
       </div>
 
@@ -63,7 +77,13 @@
           <input type="checkbox" id="confirmRead" disabled />
           <span>Saya sudah membaca pesan keselamatan harian</span>
         </label>
-        <button id="startGameBtn" class="primary-btn" type="button" disabled>
+
+        <button
+          id="startGameBtn"
+          class="primary-btn"
+          type="button"
+          disabled
+        >
           Mulai Game
         </button>
       </div>
@@ -103,30 +123,55 @@
           maxlength="12"
           aria-label="Masukkan tebakan kata"
         />
+
         <div class="input-buttons">
-          <button id="backspaceBtn" class="ghost-btn" type="button">Hapus</button>
-          <button id="submitBtn" class="primary-btn" type="button">Submit</button>
+          <button id="backspaceBtn" class="ghost-btn" type="button">
+            Hapus
+          </button>
+          <button id="submitBtn" class="primary-btn" type="button">
+            Submit
+          </button>
         </div>
       </div>
 
-      <div id="keyboard" class="keyboard" aria-label="Keyboard virtual"></div>
+      <div
+        id="keyboard"
+        class="keyboard"
+        aria-label="Keyboard virtual"
+      ></div>
     </section>
   </div>
 
+  <!-- Modal -->
   <div id="modalOverlay" class="modal-overlay hidden" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
       <div class="modal-header">
         <div>
           <p id="modalEyebrow" class="modal-eyebrow">Info</p>
           <h3 id="modalTitle">Judul</h3>
         </div>
-        <button id="modalCloseBtn" class="icon-btn" type="button" aria-label="Tutup">×</button>
+
+        <button
+          id="modalCloseBtn"
+          class="icon-btn"
+          type="button"
+          aria-label="Tutup"
+        >
+          ×
+        </button>
       </div>
+
       <div id="modalBody" class="modal-body"></div>
       <div id="modalActions" class="modal-actions"></div>
     </div>
   </div>
 
+  <!-- Toast -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="script.js"></script>
